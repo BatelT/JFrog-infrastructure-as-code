@@ -1,0 +1,35 @@
+---
+  - hosts: artifactory
+    become: true
+    vars:
+      ansible_python_interpreter: "/usr/bin/env python3"  
+    environment:
+      environment:
+        - JF_ROUTER_ENTRYPOINTS_EXTERNALPORT=8082
+    tasks:
+      - docker_compose:
+          project_name: artifactory
+          definition:
+            version: '3'
+            services:
+              artifactory:
+                image: docker.bintray.io/jfrog/artifactory-pro:latest
+                container_name: artifactory
+                ports:
+                 - "8081:8081"
+                 - "8082:8082"
+                volumes:
+                 - /home/batelt/.jfrog/var:/var/opt/jfrog/artifactory
+                 - /etc/localtime:/etc/localtime:ro
+                 - /var/run/Docker.sock:/var/run/Docker.sock
+                restart: always
+                logging:
+                  driver: json-file
+                  options:
+                    max-size: "50m"
+                    max-file: "10"
+                ulimits:
+                  nproc: 65535
+                  nofile:
+                    soft: 32000
+                    hard: 40000
